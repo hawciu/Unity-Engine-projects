@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.IO;
 
 public class gameManagerScript : MonoBehaviour
 {
@@ -14,17 +13,20 @@ public class gameManagerScript : MonoBehaviour
     public GameObject minimap;
     public GameObject buttonF;
     public GameObject buttonM;
+    public GameObject ankietaPo;
 
     GameObject player;
     int diamonds = 0;
     float lastDiamondSound = 0;
     float diamondSoundPitch = 1.0f;
     bool uiType;
+    string fileName;
 
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.Find("FirstPersonPlayer");
+        fileName = "wynik_" + System.DateTime.Now.ToString().Replace("/","-").Replace(":", "-") + ".txt";
     }
 
     void pickup(string pickupIn)
@@ -42,6 +44,7 @@ public class gameManagerScript : MonoBehaviour
                 {
                     uiredkey.SetActive(true);
                 }
+                writeToLog(Time.time.ToString() + "," + "red key");
                 break;
 
             case "yellowKey":
@@ -51,6 +54,7 @@ public class gameManagerScript : MonoBehaviour
                 {
                     uiyellowkey.SetActive(true);
                 }
+                writeToLog(Time.time.ToString() + "," + "yellow key");
                 break;
 
             case "greenKey":
@@ -60,6 +64,7 @@ public class gameManagerScript : MonoBehaviour
                 {
                     uigreenkey.SetActive(true);
                 }
+                writeToLog(Time.time.ToString() + "," + "green key");
                 break;
 
             case "blueKey":
@@ -69,6 +74,7 @@ public class gameManagerScript : MonoBehaviour
                 {
                     uibluekey.SetActive(true);
                 }
+                writeToLog(Time.time.ToString() + "," + "blue key");
                 break;
 
             case "diamond":
@@ -91,11 +97,13 @@ public class gameManagerScript : MonoBehaviour
                 audiosource.pitch = diamondSoundPitch;
                 //audiosource.Play();
                 audiosource.PlayOneShot(diamondpickupclip, 2);
+                writeToLog(Time.time.ToString() + "," + "diamond");
                 break;
 
             case "gun":
                 player.SendMessage("activateGun");
                 audiosource.PlayOneShot(gunpickupclip, 2);
+                writeToLog(Time.time.ToString() + "," + "gun");
                 break;
         }
     }
@@ -144,5 +152,32 @@ public class gameManagerScript : MonoBehaviour
         //cursor
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        writeToLog(Time.time.ToString() + " " + uiType.ToString());
+    }
+
+    public void writeToLog(string textToLog)
+    {
+        textToLog = textToLog + "," + player.transform.position.ToString();
+        string path = fileName;
+        if (!File.Exists(path))
+        {
+            // Create a file to write to.
+            using (StreamWriter sw = File.CreateText(path))
+            {
+                sw.WriteLine(textToLog);
+            }
+        }
+        else
+        {
+            StreamWriter writer = new StreamWriter(path, true);
+            writer.WriteLine(textToLog);
+            writer.Close();
+        }
+    }
+
+    public void aktywujAnkietePo(GameObject button)
+    {
+        button.SetActive(false);
+        ankietaPo.SetActive(true);
     }
 }
